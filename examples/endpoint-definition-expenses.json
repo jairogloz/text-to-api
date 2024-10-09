@@ -1,0 +1,130 @@
+{
+  "endpoints": [
+    {
+      "name": "Create Expense",
+      "path": "/expenses",
+      "method": "POST",
+      "request_body": [
+        {
+          "name": "description",
+          "type": "string",
+          "allowed_values": []
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "allowed_values": []
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "allowed_values": ["guilt-free", "fixed-costs", "savings", "investments"]
+        },
+        {
+          "name": "date",
+          "type": "string",
+          "allowed_values": []
+        }
+      ],
+      "query_params": [],
+      "url_params": []
+    },
+    {
+      "name": "Get Expense",
+      "path": "/expenses/{expenseId}",
+      "method": "GET",
+      "request_body": [],
+      "query_params": [],
+      "url_params": [
+        {
+          "name": "expenseId",
+          "type": "string",
+          "allowed_values": []
+        }
+      ]
+    },
+    {
+      "name": "Update Expense",
+      "path": "/expenses/{expenseId}",
+      "method": "PUT",
+      "request_body": [
+        {
+          "name": "description",
+          "type": "string",
+          "allowed_values": []
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "allowed_values": []
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "allowed_values": ["guilt-free", "fixed-costs", "savings", "investments"]
+        },
+        {
+          "name": "date",
+          "type": "string",
+          "allowed_values": []
+        }
+      ],
+      "query_params": [],
+      "url_params": [
+        {
+          "name": "expenseId",
+          "type": "string",
+          "allowed_values": []
+        }
+      ]
+    },
+    {
+      "name": "Delete Expense",
+      "path": "/expenses/{expenseId}",
+      "method": "DELETE",
+      "request_body": [],
+      "query_params": [],
+      "url_params": [
+        {
+          "name": "expenseId",
+          "type": "string",
+          "allowed_values": []
+        }
+      ]
+    },
+    {
+      "name": "List Expenses",
+      "path": "/expenses",
+      "method": "GET",
+      "request_body": [],
+      "query_params": [
+        {
+          "name": "from",
+          "type": "string",
+          "allowed_values": []
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "allowed_values": []
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "allowed_values": ["guilt-free", "fixed-costs", "savings", "investments"]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "allowed_values": []
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "allowed_values": []
+        }
+      ],
+      "url_params": []
+    }
+  ]
+}
