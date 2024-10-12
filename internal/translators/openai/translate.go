@@ -16,11 +16,12 @@ import (
 func (t translator) Translate(ctx context.Context, prompt string, userID string) (*domain.Translation, error) {
 
 	// Todo: get user threadID if any
-	threadID := ""
+	threadID := "thread_irSKWtcAGsQe3UeW019BYfGh"
 	//var thread openai.Thread
 	//var err error
 
 	if threadID == "" {
+		t.logger.Debug(ctx, "No thread found for user, will create a new one", "userID", userID)
 		// there's no open thread for the user, so create a new thread and run with the prompt
 		run, err := t.client.CreateThreadAndRun(
 			ctx,
@@ -68,11 +69,56 @@ func (t translator) Translate(ctx context.Context, prompt string, userID string)
 		t.logger.Info(ctx, "Message received", "message", message.Content, "role", message.Role)
 	}
 
+	t.logger.Debug(ctx, "Thread found for user", "threadID", threadID)
+
 	// There seems to be an open thread for the user, so add the prompt to the thread
 	// and run
-	// Todo: Get thread
+	// Get thread just to make sure it exists
+	_, err := t.client.RetrieveThread(ctx, threadID)
+	if err != nil {
+		t.logger.Error(ctx, "Error retrieving thread", "error", err)
+		return nil, fmt.Errorf("could not retrieve thread: %w", err)
+	}
+
 	// Todo: Add message to thread
+	_, err = t.client.CreateMessage(ctx, threadID, openai.MessageRequest{
+		Role:    string(openai.ThreadMessageRoleUser),
+		Content: prompt,
+	})
+	if err != nil {
+		t.logger.Error(ctx, "Error creating message", "error", err)
+		return nil, fmt.Errorf("could not create message: %w", err)
+	}
 	// Todo: Run thread
+	run, err := t.client.CreateRun(ctx, threadID, openai.RunRequest{
+		AssistantID: t.assistantID,
+	})
+	if err != nil {
+		t.logger.Error(ctx, "Error creating run", "error", err)
+		return nil, fmt.Errorf("could not create run: %w", err)
+	}
+
+	err = waitForRunCompletion(ctx, t.logger, t.client, run.ThreadID, run.ID, 2*time.Second)
+	if err != nil {
+		t.logger.Error(ctx, "Error waiting for run completion.", "error", err)
+		return nil, fmt.Errorf("could not wait for run completion: %w", err)
+	}
+
+	// When run is finished, get the completion
+	messageList, err := t.client.ListMessage(ctx, run.ThreadID, domain.Ptr(1),
+		domain.Ptr("desc"), nil /*after*/, nil /*before*/, domain.Ptr(run.ID))
+	if err != nil {
+		t.logger.Error(ctx, "Error listing messages", "error", err)
+		return nil, fmt.Errorf("could not list messages: %w", err)
+	}
+
+	if len(messageList.Messages) == 0 {
+		t.logger.Error(ctx, "No messages found")
+		return nil, fmt.Errorf("no messages found")
+	}
+
+	message := messageList.Messages[0]
+	t.logger.Info(ctx, "Message received", "message", message.Content, "role", message.Role)
 
 	translation := &domain.Translation{
 		//Completion: completion,
