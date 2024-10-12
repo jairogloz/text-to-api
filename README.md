@@ -22,32 +22,14 @@ Run the application
 ```bash
 make run
 ```
-Create DB container
-```bash
-make docker-run
-```
-
-Shutdown DB Container
-```bash
-make docker-down
-```
-
-DB Integrations Test:
-```bash
-make itest
-```
-
-Live reload the application:
-```bash
-make watch
-```
-
-Run the test suite:
-```bash
-make test
-```
 
 Clean up binary from the last build:
 ```bash
 make clean
 ```
+
+## About the OpenAI Model Used
+- Model: gpt-3.5-turbo
+- Token Limit: 4096
+- Approx max size in words: 3000
+- Approx max size in bytes: 16384 (16KB)

@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"syscall"
 	"text-to-api/internal/handlers/translations"
-	"text-to-api/internal/repositories/endpoints"
 	"text-to-api/internal/server"
 	translationsService "text-to-api/internal/services/translations"
 	"text-to-api/internal/translators/openai"
+	"text-to-api/internal/zap"
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -41,17 +41,17 @@ func gracefulShutdown(fiberServer *server.FiberServer) {
 
 func main() {
 
-	endpointsRepo, err := endpoints.NewEndpointRepository()
+	logger, err := zap.NewLogger("development")
 	if err != nil {
-		panic(fmt.Sprintf("could not create endpoints repository: %s", err))
+		panic(fmt.Sprintf("could not create logger: %s", err))
 	}
 
-	translator, err := openai.NewOpenAITranslator(os.Getenv("OPENAI_APIKEY"))
+	translator, err := openai.NewOpenAITranslator(logger, os.Getenv("OPENAI_APIKEY"), os.Getenv("OPENAI_ASSISTANT_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("could not create translator: %s", err))
 	}
 
-	service, err := translationsService.NewTranslationsService(translator, endpointsRepo)
+	service, err := translationsService.NewTranslationsService(translator, logger)
 	if err != nil {
 		panic(fmt.Sprintf("could not create translations service: %s", err))
 	}

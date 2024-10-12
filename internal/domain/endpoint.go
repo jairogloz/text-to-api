@@ -10,11 +10,3 @@ type Endpoint struct {
 	QueryParams []FieldDefinition `json:"query_params" bson:"query_params"`
 	UrlParams   []FieldDefinition `json:"url_params" bson:"url_params"`
 }
-
-// FieldDefinition is a struct that represents a field definition in the user's API.
-// It can be a request body field, a query parameter or a URL parameter.
-type FieldDefinition struct {
-	Name          string        `json:"name" bson:"name"`
-	Type          string        `json:"type" bson:"type"`
-	AllowedValues []interface{} `json:"allowed_values" bson:"allowed_values"`
-}

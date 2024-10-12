@@ -9,19 +9,19 @@ import (
 // components to translate human language prompts into the corresponding
 // API Endpoints.
 type service struct {
-	endpointsRepository ports.EndpointRepository
-	translator          ports.Translator
+	logger     ports.Logger
+	translator ports.Translator
 }
 
 // NewTranslationsService creates a new service implementing ports.TranslationService.
-func NewTranslationsService(t ports.Translator, endpointsRepo ports.EndpointRepository) (ports.TranslationService, error) {
+func NewTranslationsService(t ports.Translator, l ports.Logger) (ports.TranslationService, error) {
 	s := &service{
-		endpointsRepository: endpointsRepo,
-		translator:          t,
+		logger:     l,
+		translator: t,
 	}
 
-	if s.endpointsRepository == nil {
-		return nil, fmt.Errorf("endpointsRepository can't be nil")
+	if s.logger == nil {
+		return nil, fmt.Errorf("logger can't be nil")
 	}
 	if s.translator == nil {
 		return nil, fmt.Errorf("translator can't be nil")
