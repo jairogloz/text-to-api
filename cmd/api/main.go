@@ -70,6 +70,7 @@ func main() {
 
 	go func() {
 		port, _ := strconv.Atoi(os.Getenv("PORT"))
+		fmt.Println("Listening on port", port)
 		err := srv.Listen(fmt.Sprintf(":%d", port))
 		if err != nil {
 			panic(fmt.Sprintf("http server error: %s", err))
