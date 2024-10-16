@@ -46,7 +46,7 @@ func main() {
 		panic(fmt.Sprintf("could not create logger: %s", err))
 	}
 
-	translator, err := openai.NewOpenAITranslator(logger, os.Getenv("OPENAI_APIKEY"), os.Getenv("OPENAI_ASSISTANT_ID"))
+	translator, err := openai.NewOpenAITranslator(logger, os.Getenv("OPENAI_APIKEY"), os.Getenv("OPENAI_OBJECT_TRANSLATOR_ASSISTANT_ID"))
 	if err != nil {
 		panic(fmt.Sprintf("could not create translator: %s", err))
 	}

@@ -1,0 +1,32 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+
+jobs:
+
+  build:
+
+    runs-on: self-hosted
+
+    steps:
+      - name: Pull Docker Image
+        run: sudo docker pull jairogloz/text-to-api:latest
+      - name: Delete Old Docker Container
+        run: sudo docker rm -f text-to-api-container || true
+      - name: Run Docker Container
+        env:
+          MONGO_URI: ${{secrets.MONGO_URI}}
+          MONGO_DB_NAME: ${{secrets.MONGO_DB_NAME}}
+          OPENAI_APIKEY: ${{secrets.OPENAI_APIKEY}}
+          OPENAI_OBJECT_TRANSLATOR_ASSISTANT_ID: ${{secrets.OPENAI_OBJECT_TRANSLATOR_ASSISTANT_ID}}
+        run: |
+          sudo docker run -d --name text-to-api-container -p 8081:8081 \
+            -e MONGO_URI="${MONGO_URI}" \
+            -e MONGO_DB_NAME="${MONGO_DB_NAME}" \
+            -e OPENAI_APIKEY="${OPENAI_APIKEY}" \
+            -e OPENAI_OBJECT_TRANSLATOR_ASSISTANT_ID="${OPENAI_OBJECT_TRANSLATOR_ASSISTANT_ID}" \
+            jairogloz/text-to-api:latest
