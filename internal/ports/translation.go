@@ -7,7 +7,7 @@ import (
 
 // Translator exposes methods to translate human language prompts into the corresponding API Endpoints.
 type Translator interface {
-	Translate(ctx context.Context, prompt string, userID string) (*domain.Translation, error)
+	TranslateToObject(ctx context.Context, prompt string, userID string) (interface{}, error)
 }
 
 // TranslationService exposes the services provided by this application regarding translations.

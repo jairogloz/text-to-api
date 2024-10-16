@@ -1,0 +1,84 @@
+{
+  "current_date": "2021-09-01T00:00:00Z",
+  "input_text": "Ayer compré mandado en el smart, gasté 1800 pesos mexicanos",
+  "lang": "es",
+  "translation_type": "object",
+  "target_object": {
+    "fields": [
+      {
+        "allowed_values": [],
+        "name": "description",
+        "type": "string"
+      },
+      {
+        "type": "number",
+        "allowed_values": [],
+        "name": "amount"
+      },
+      {
+        "type": "string",
+        "allowed_values": [
+          "usd",
+          "eur",
+          "mxn"
+        ],
+        "name": "currency"
+      },
+      {
+        "type": "string",
+        "allowed_values": [
+          "guilt-free",
+          "fixed-costs",
+          "savings",
+          "investments"
+        ],
+        "name": "category"
+      },
+      {
+        "type": "string",
+        "depends_on": "category",
+        "dependent_allowed_values": [
+          {
+            "value": "guilt-free",
+            "allowed_values": [
+              "food",
+              "clothes",
+              "entertainment"
+            ]
+          },
+          {
+            "value": "fixed-costs",
+            "allowed_values": [
+              "rent",
+              "internet",
+              "phone"
+            ]
+          },
+          {
+            "value": "savings",
+            "allowed_values": [
+              "emergency",
+              "travel",
+              "gifts"
+            ]
+          },
+          {
+            "value": "investments",
+            "allowed_values": [
+              "stocks",
+              "bonds",
+              "crypto"
+            ]
+          }
+        ],
+        "name": "sub_category"
+      },
+      {
+        "type": "date",
+        "format": "ISO-8601",
+        "description": "Date when the expense was made",
+        "name": "created_at"
+      }
+    ]
+  }
+}
