@@ -69,9 +69,12 @@ func main() {
 	srv.App.Get("/health", srv.HealthHandler)
 
 	go func() {
-		port, _ := strconv.Atoi(os.Getenv("PORT"))
+		port, err := strconv.Atoi(os.Getenv("PORT"))
+		if err != nil {
+			logger.Fatal(context.Background(), "could not parse port", "error", err.Error())
+		}
 		fmt.Println("Listening on port", port)
-		err := srv.Listen(fmt.Sprintf(":%d", port))
+		err = srv.Listen(fmt.Sprintf(":%d", port))
 		if err != nil {
 			panic(fmt.Sprintf("http server error: %s", err))
 		}

@@ -23,10 +23,12 @@ jobs:
           MONGO_DB_NAME: ${{secrets.MONGO_DB_NAME}}
           OPENAI_APIKEY: ${{secrets.OPENAI_APIKEY}}
           OPENAI_OBJECT_TRANSLATOR_ASSISTANT_ID: ${{secrets.OPENAI_OBJECT_TRANSLATOR_ASSISTANT_ID}}
+          PORT: ${{secrets.PORT}}
         run: |
           sudo docker run -d --name text-to-api-container -p 8081:8081 \
             -e MONGO_URI="${MONGO_URI}" \
             -e MONGO_DB_NAME="${MONGO_DB_NAME}" \
             -e OPENAI_APIKEY="${OPENAI_APIKEY}" \
             -e OPENAI_OBJECT_TRANSLATOR_ASSISTANT_ID="${OPENAI_OBJECT_TRANSLATOR_ASSISTANT_ID}" \
+            -e PORT="${PORT}" \
             jairogloz/text-to-api:latest
