@@ -1,5 +1,7 @@
 package domain
 
+const CollNameClients = "clients"
+
 type ClientEnvironment string
 
 const (
@@ -10,15 +12,9 @@ const (
 // A Client represents a client in the system. A client can have multiple
 // API keys.
 type Client struct {
-	ID      string   `json:"id" bson:"_id"`
+	ID      string   `json:"id" bson:"id"`
 	Name    string   `json:"name" bson:"name"`
 	APIKeys []APIKey `json:"api_keys" bson:"api_keys"`
-}
-
-// RequestContext represents the context of a request.
-type RequestContext struct {
-	ClientID string
-	UserID   string
 }
 
 // APIKey represents an API key in the system. A Client can have

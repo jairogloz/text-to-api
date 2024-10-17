@@ -10,7 +10,10 @@ import (
 	"syscall"
 	"text-to-api/internal/handlers/middleware"
 	"text-to-api/internal/handlers/translations"
+	"text-to-api/internal/repositories/mongo"
+	"text-to-api/internal/repositories/mongo/client"
 	"text-to-api/internal/server"
+	"text-to-api/internal/services/auth"
 	translationsService "text-to-api/internal/services/translations"
 	"text-to-api/internal/translators/openai"
 	"text-to-api/internal/zap"
@@ -57,15 +60,31 @@ func main() {
 		panic(fmt.Sprintf("could not create translations service: %s", err))
 	}
 
-	hdl, err := translations.NewTranslationsHandler(service)
+	hdl, err := translations.NewTranslationsHandler(service, logger)
 	if err != nil {
 		panic(fmt.Sprintf("could not create translations handler: %s", err))
 	}
 
 	srv := server.New()
 
+	mongoClient, disconnect, err := mongo.ConnectMongoDB(os.Getenv("MONGO_URI"))
+	if err != nil {
+		panic(fmt.Sprintf("could not connect to mongodb: %s", err))
+	}
+	defer disconnect()
+
+	clientRepo, err := client.NewClientRepository(mongoClient, logger, os.Getenv("MONGO_DB_NAME"))
+	if err != nil {
+		panic(fmt.Sprintf("could not create client repository: %s", err))
+	}
+
+	authSrv, err := auth.NewAuthService(clientRepo)
+	if err != nil {
+		panic(fmt.Sprintf("could not create auth service: %s", err))
+	}
+
 	// Register the auth middleware globally
-	srv.App.Use(middleware.AuthMiddleware())
+	srv.App.Use(middleware.AuthMiddleware(authSrv))
 
 	srv.App.Post("/v1/translations", hdl.Create)
 

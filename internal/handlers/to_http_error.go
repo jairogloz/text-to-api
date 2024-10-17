@@ -7,8 +7,8 @@ import (
 	"text-to-api/internal/domain"
 )
 
-// HandleError returns the appropriate HTTP status code and message for the given error.
-func HandleError(err error) (httpStatusCode int, message string) {
+// ToHTTPError returns the appropriate HTTP status code and message for the given error.
+func ToHTTPError(err error) (httpStatusCode int, message string) {
 	if errors.Is(err, domain.ErrorValidation) {
 		return fiber.StatusBadRequest, fmt.Sprintf("Validation error: %s", err.Error())
 	}
