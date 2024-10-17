@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"text-to-api/internal/handlers/middleware"
 	"text-to-api/internal/handlers/translations"
 	"text-to-api/internal/server"
 	translationsService "text-to-api/internal/services/translations"
@@ -62,6 +63,10 @@ func main() {
 	}
 
 	srv := server.New()
+
+	// Register the auth middleware globally
+	srv.App.Use(middleware.AuthMiddleware())
+
 	srv.App.Post("/v1/translations", hdl.Create)
 
 	// Todo: potentially delete the following handlers

@@ -13,12 +13,11 @@ type TranslationRequestBody struct {
 	Lang            string                   `json:"lang" bson:"lang"`
 	TranslationType string                   `json:"translation_type" bson:"translation_type"`
 	TargetObject    *domain.ObjectDefinition `json:"target_object" bson:"target_object"`
-	UserID          string                   `json:"userID" bson:"userID"`
 }
 
 func (h *Handler) Create(c *fiber.Ctx) error {
 
-	// Todo: get user/userID from context
+	// Todo: get request context from fiber context
 
 	var requestBody TranslationRequestBody
 	// Parse the requestBody body into the struct
