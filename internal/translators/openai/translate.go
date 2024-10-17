@@ -13,14 +13,18 @@ import (
 // TranslateToObject translates the given request to one of the given endpoints.
 // Todo: change this function to TranslateToObject
 // Todo: needs refactor
-func (t translator) TranslateToObject(ctx context.Context, prompt string, userID string) (interface{}, error) {
+func (t translator) TranslateToObject(ctx context.Context, translationRequest domain.TranslationRequest, userID string) (interface{}, error) {
+
+	requestAsJSON, err := json.Marshal(translationRequest)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal request: %w", err)
+	}
 
 	// Todo: get user threadID if any
 	threadID := "thread_irSKWtcAGsQe3UeW019BYfGh"
 	//var thread openai.Thread
 
 	var run openai.Run
-	var err error
 	if threadID == "" {
 		t.logger.Debug(ctx, "No thread found for user, will create a new one", "userID", userID)
 		// there's no open thread for the user, so create a new thread and run with the prompt
@@ -34,7 +38,7 @@ func (t translator) TranslateToObject(ctx context.Context, prompt string, userID
 					Messages: []openai.ThreadMessage{
 						{
 							Role:    openai.ThreadMessageRoleUser,
-							Content: prompt,
+							Content: string(requestAsJSON),
 						},
 					},
 				},
@@ -57,7 +61,7 @@ func (t translator) TranslateToObject(ctx context.Context, prompt string, userID
 		// and get rid of this CreateMessage part
 		_, err = t.client.CreateMessage(ctx, threadID, openai.MessageRequest{
 			Role:    string(openai.ThreadMessageRoleUser),
-			Content: prompt,
+			Content: string(requestAsJSON),
 		})
 		if err != nil {
 			t.logger.Error(ctx, "Error creating message", "error", err)

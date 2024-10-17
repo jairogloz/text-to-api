@@ -2,10 +2,8 @@ package translations
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"text-to-api/internal/domain"
-	"time"
 )
 
 // Create creates a new translation based on the user's request.
@@ -14,22 +12,14 @@ import (
 func (s service) Create(ctx context.Context, request domain.TranslationRequest, userID string) (*domain.Translation, error) {
 
 	if userID == "" {
-		return nil, fmt.Errorf("userID is required")
+		return nil, fmt.Errorf("%w: userID is required", domain.ErrorValidation)
 	}
 	if err := request.Validate(); err != nil {
 		s.logger.Debug(ctx, "Invalid request", "error", err)
 		return nil, fmt.Errorf("invalid request: %w", err)
 	}
 
-	now := time.Now().UTC()
-	request.CurrentDate = now.Format(time.RFC850)
-
-	requestAsJSON, err := json.Marshal(request)
-	if err != nil {
-		return nil, fmt.Errorf("could not marshal request: %w", err)
-	}
-
-	mappedObject, err := s.translator.TranslateToObject(ctx, string(requestAsJSON), userID)
+	mappedObject, err := s.translator.TranslateToObject(ctx, request, userID)
 	if err != nil {
 		return nil, fmt.Errorf("could not translate prompt: %w", err)
 	}
