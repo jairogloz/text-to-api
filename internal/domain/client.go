@@ -2,13 +2,6 @@ package domain
 
 const CollNameClients = "clients"
 
-type ClientEnvironment string
-
-const (
-	ClientEnvironmentLive    ClientEnvironment = "live"
-	ClientEnvironmentSandbox ClientEnvironment = "sandbox"
-)
-
 // A Client represents a client in the system. A client can have multiple
 // API keys.
 type Client struct {
@@ -21,6 +14,6 @@ type Client struct {
 // multiple API keys.
 // Todo: Add management fields like created_at, updated_at, etc.
 type APIKey struct {
-	Hash        string            `json:"hash" bson:"hash"`
-	Environment ClientEnvironment `json:"environment" bson:"environment"`
+	Hash        string             `json:"hash" bson:"hash"`
+	Environment RequestEnvironment `json:"environment" bson:"environment"`
 }

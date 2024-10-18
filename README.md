@@ -33,3 +33,14 @@ make clean
 - Token Limit: 4096
 - Approx max size in words: 3000
 - Approx max size in bytes: 16384 (16KB)
+
+## About the storage
+
+### MongoDB
+
+This project currently uses MongoDB as primary storage for the data. For the right behaviour of the application, the following is required:
+
+#### Indexes
+
+- Collection: `users`
+  - Index: `client_id, user_id` (unique) 

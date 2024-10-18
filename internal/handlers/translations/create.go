@@ -56,7 +56,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		CurrentDate:     time.Now().UTC().Format(time.RFC850),
 	}
 
-	translation, err := h.service.Create(c.Context(), translationRequest, requestContext.UserID)
+	translation, err := h.service.Create(c.Context(), translationRequest, *requestContext)
 	if err != nil {
 		httpStatusCode, message := handlers.ToHTTPError(err)
 		return c.Status(httpStatusCode).JSON(fiber.Map{"error": message})

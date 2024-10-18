@@ -7,6 +7,8 @@ import (
 	"text-to-api/internal/ports"
 )
 
+const MetadataFieldThreadID = "thread_id"
+
 // translator implements ports.Translator and holds all the required components to
 // perform translations using the OpenAI API.
 type translator struct {

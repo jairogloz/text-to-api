@@ -11,13 +11,15 @@ import (
 type service struct {
 	logger     ports.Logger
 	translator ports.Translator
+	userRepo   ports.UserRepository
 }
 
 // NewTranslationsService creates a new service implementing ports.TranslationService.
-func NewTranslationsService(t ports.Translator, l ports.Logger) (ports.TranslationService, error) {
+func NewTranslationsService(t ports.Translator, l ports.Logger, ur ports.UserRepository) (ports.TranslationService, error) {
 	s := &service{
 		logger:     l,
 		translator: t,
+		userRepo:   ur,
 	}
 
 	if s.logger == nil {
@@ -25,6 +27,9 @@ func NewTranslationsService(t ports.Translator, l ports.Logger) (ports.Translati
 	}
 	if s.translator == nil {
 		return nil, fmt.Errorf("translator can't be nil")
+	}
+	if s.userRepo == nil {
+		return nil, fmt.Errorf("user repository can't be nil")
 	}
 
 	return s, nil

@@ -40,7 +40,7 @@ func AuthMiddleware(authService ports.AuthService) fiber.Handler {
 			UserID: userIDHeader,
 		}
 
-		requestCtx, err := authService.Auth(authParams)
+		requestCtx, err := authService.Auth(c.Context(), authParams)
 		if err != nil {
 			if errors.Is(err, domain.ErrorNotFound) {
 				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{

@@ -11,22 +11,40 @@ import (
 )
 
 // TranslateToObject translates the given request to one of the given endpoints.
-// Todo: change this function to TranslateToObject
-// Todo: needs refactor
-func (t translator) TranslateToObject(ctx context.Context, translationRequest domain.TranslationRequest, userID string) (interface{}, error) {
+// It handles the creation of a new thread and run if no existing thread is found for the user,
+// or adds a message to an existing thread and runs it if a thread is found.
+//
+// Parameters:
+//   - ctx: The context for managing request deadlines and cancellation signals.
+//   - translationRequest: The request to be translated.
+//   - user: A pointer to the domain.User for whom the translation is being performed.
+//
+// Returns:
+//   - translatedObject: The translated object as an interface{}.
+//   - newUserMetadata: The updated user metadata, which includes the thread ID if a new thread was created.
+//   - err: An error if any issue occurs during the translation process.
+func (t translator) TranslateToObject(ctx context.Context, translationRequest domain.TranslationRequest, user *domain.User) (translatedObject interface{}, newUserMetadata domain.UserMetadata, err error) {
 
 	requestAsJSON, err := json.Marshal(translationRequest)
 	if err != nil {
-		return nil, fmt.Errorf("could not marshal request: %w", err)
+		return nil, nil, fmt.Errorf("could not marshal request: %w", err)
 	}
 
-	// Todo: get user threadID if any
-	threadID := "thread_irSKWtcAGsQe3UeW019BYfGh"
-	//var thread openai.Thread
+	newUserMetadata = make(domain.UserMetadata)
+
+	// We try to get the user current threadID from the user metadata
+	threadID := ""
+	if user != nil {
+		threadID = user.Metadata.GetString(MetadataFieldThreadID)
+		if len(user.Metadata) == 0 {
+			user.Metadata = make(domain.UserMetadata)
+		}
+		newUserMetadata = user.Metadata
+	}
 
 	var run openai.Run
 	if threadID == "" {
-		t.logger.Debug(ctx, "No thread found for user, will create a new one", "userID", userID)
+		t.logger.Debug(ctx, "No thread found for user, will create a new one", "userID", user)
 		// there's no open thread for the user, so create a new thread and run with the prompt
 		run, err = t.client.CreateThreadAndRun(
 			ctx,
@@ -46,9 +64,12 @@ func (t translator) TranslateToObject(ctx context.Context, translationRequest do
 		)
 		if err != nil {
 			t.logger.Error(ctx, "Error creating thread and run", "error", err)
-			return nil, fmt.Errorf("could not create thread and run: %w", err)
+			return nil, nil, fmt.Errorf("could not create thread and run: %w", err)
 		}
 		t.logger.Debug(ctx, "Thread and run created", "threadID", run.ThreadID, "runID", run.ID)
+
+		// As a new thread was created, we append it to the user metadata
+		newUserMetadata[MetadataFieldThreadID] = run.ThreadID
 
 	} else {
 		t.logger.Debug(ctx, "Thread found for user", "threadID", threadID)
@@ -65,7 +86,7 @@ func (t translator) TranslateToObject(ctx context.Context, translationRequest do
 		})
 		if err != nil {
 			t.logger.Error(ctx, "Error creating message", "error", err)
-			return nil, fmt.Errorf("could not create message: %w", err)
+			return nil, nil, fmt.Errorf("could not create message: %w", err)
 		}
 		// Run thread
 		run, err = t.client.CreateRun(ctx, threadID, openai.RunRequest{
@@ -73,15 +94,15 @@ func (t translator) TranslateToObject(ctx context.Context, translationRequest do
 		})
 		if err != nil {
 			t.logger.Error(ctx, "Error creating run", "error", err)
-			return nil, fmt.Errorf("could not create run: %w", err)
+			return nil, nil, fmt.Errorf("could not create run: %w", err)
 		}
 	} // end of if/else
 
 	// Todo: register the average completion time to modify the wait time dynamically
-	err = waitForRunCompletion(ctx, t.logger, t.client, run.ThreadID, run.ID, 100*time.Millisecond)
+	err = waitForRunCompletion(ctx, t.logger, t.client, run.ThreadID, run.ID, 250*time.Millisecond)
 	if err != nil {
 		t.logger.Error(ctx, "Error waiting for run completion.", "error", err)
-		return nil, fmt.Errorf("could not wait for run completion: %w", err)
+		return nil, nil, fmt.Errorf("could not wait for run completion: %w", err)
 	}
 
 	// When run is finished, get the completion
@@ -89,12 +110,12 @@ func (t translator) TranslateToObject(ctx context.Context, translationRequest do
 		domain.Ptr("desc"), nil /*after*/, nil /*before*/, domain.Ptr(run.ID))
 	if err != nil {
 		t.logger.Error(ctx, "Error listing messages", "error", err)
-		return nil, fmt.Errorf("could not list messages: %w", err)
+		return nil, nil, fmt.Errorf("could not list messages: %w", err)
 	}
 
 	if len(messageList.Messages) == 0 {
 		t.logger.Error(ctx, "No messages found")
-		return nil, fmt.Errorf("no messages found")
+		return nil, nil, fmt.Errorf("no messages found")
 	}
 
 	message := messageList.Messages[0]
@@ -111,13 +132,27 @@ func (t translator) TranslateToObject(ctx context.Context, translationRequest do
 	err = json.Unmarshal([]byte(resp), &objectMapped)
 	if err != nil {
 		t.logger.Error(ctx, "Error unmarshalling response", "error", err)
-		return nil, fmt.Errorf("could not unmarshal response: %w", err)
+		return nil, nil, fmt.Errorf("could not unmarshal response: %w", err)
 	}
 
-	return &objectMapped, nil
+	return &objectMapped, newUserMetadata, nil
 
 }
 
+// waitForRunCompletion waits for the completion of a run in the OpenAI client.
+// It periodically checks the status of the run and returns when the run is completed
+// or if the context is cancelled or times out.
+//
+// Parameters:
+//   - ctx: The context for managing request deadlines and cancellation signals.
+//   - l: The logger for logging debug information.
+//   - client: The OpenAI client used to retrieve the run status.
+//   - threadID: The ID of the thread associated with the run.
+//   - runID: The ID of the run to wait for completion.
+//   - checkInterval: The interval at which to check the run status.
+//
+// Returns:
+//   - An error if the context is cancelled, times out, or if there is an issue retrieving the run status.
 func waitForRunCompletion(ctx context.Context, l ports.Logger, client *openai.Client, threadID, runID string, checkInterval time.Duration) error {
 	ticker := time.NewTicker(checkInterval)
 	defer ticker.Stop()
