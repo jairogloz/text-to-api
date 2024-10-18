@@ -11,7 +11,7 @@ build:
 
 # Run the application
 run:
-	@set -a; source development.env; set +a; go run cmd/api/main.go
+	@export $$(cat development.env | xargs) && go run cmd/api/main.go
 
 # Test the application
 test:
