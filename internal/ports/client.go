@@ -7,5 +7,5 @@ import (
 
 // ClientRepository exposes methods for interacting with the client repository.
 type ClientRepository interface {
-	GetClientByAPIKey(ctx context.Context, apiKeyHash string) (client *domain.Client, err error)
+	GetByAPIKeyHash(ctx context.Context, apiKeyHash string) (client *domain.Client, apiKey *domain.APIKey, err error)
 }

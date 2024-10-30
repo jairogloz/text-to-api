@@ -20,18 +20,20 @@ import (
 // Returns:
 //   - A pointer to the domain.Client if found.
 //   - An error if the client is not found or if there is a database query error.
-func (r repository) GetClientByAPIKey(ctx context.Context, apiKeyHash string) (*domain.Client, error) {
+//
+// Todo :delete
+func (r repository) GetByAPIKeyHash(ctx context.Context, apiKeyHash string) (*domain.Client, *domain.APIKey, error) {
 	filter := bson.M{"api_keys.hash": apiKeyHash}
 
 	var client domain.Client
 	err := r.clientCollection.FindOne(ctx, filter).Decode(&client)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, domain.ErrorNotFound
+			return &client, nil, domain.ErrorNotFound
 		}
 		r.logger.Error(ctx, "error getting client by apiKey", "error", err.Error())
-		return nil, fmt.Errorf("failed to get client by apiKey: %w", err)
+		return &client, nil, fmt.Errorf("failed to get client by apiKey: %w", err)
 	}
 
-	return &client, nil
+	return &client, nil, nil
 }

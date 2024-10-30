@@ -41,24 +41,15 @@ func (h service) Auth(ctx context.Context, authParams domain.AuthParams) (*domai
 	apiKeyHash := crypto.Hash(authParams.APIKey)
 
 	// Search clients by apiKey
-	client, err := h.clientRepo.GetClientByAPIKey(ctx, apiKeyHash)
+	client, apiKey, err := h.clientRepo.GetByAPIKeyHash(ctx, apiKeyHash)
 	if err != nil {
 		return nil, fmt.Errorf("error getting client by apiKey: %w", err)
-	}
-
-	// Find environment based on the apiKey used
-	var reqEnv domain.RequestEnvironment
-	for _, key := range client.APIKeys {
-		if key.Hash == apiKeyHash {
-			reqEnv = key.Environment
-			break
-		}
 	}
 
 	// Return the request context
 	return &domain.RequestContext{
 		ClientID:    client.ID,
-		Environment: reqEnv,
+		Environment: apiKey.Environment,
 		UserID:      authParams.UserID,
 	}, nil
 }
