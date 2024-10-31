@@ -11,7 +11,6 @@ import (
 	"text-to-api/internal/handlers/middleware"
 	"text-to-api/internal/handlers/translations"
 	"text-to-api/internal/repositories/mongo"
-	"text-to-api/internal/repositories/mongo/client"
 	"text-to-api/internal/repositories/mongo/user"
 	"text-to-api/internal/repositories/postgres"
 	client2 "text-to-api/internal/repositories/postgres/client"
@@ -58,19 +57,11 @@ func main() {
 		panic(fmt.Sprintf("could not connect to postgres: %s", err))
 	}
 	defer disconnectFunc()
-	fmt.Println("Connected to postgres")
 
 	pgxClientRepo, err := client2.NewClientRepository(pgxPool)
 	if err != nil {
 		panic(fmt.Sprintf("could not create client repository: %s", err))
 	}
-
-	c, apiKey, err := pgxClientRepo.GetByAPIKeyHash(context.Background(), "1da514a0f7f984444bfd4cd6b021899b834285d94c9d5416d1e675ec46511667")
-	if err != nil {
-		panic(fmt.Sprintf("could not get client by api key: %s", err))
-	}
-	fmt.Printf("Client: %+v\n", c)
-	fmt.Printf("API Key: %+v\n", apiKey)
 
 	mongoClient, disconnect, err := mongo.ConnectMongoDB(os.Getenv("MONGO_URI"))
 	if err != nil {
@@ -100,12 +91,7 @@ func main() {
 
 	srv := server.New()
 
-	clientRepo, err := client.NewClientRepository(mongoClient, logger, os.Getenv("MONGO_DB_NAME"))
-	if err != nil {
-		panic(fmt.Sprintf("could not create client repository: %s", err))
-	}
-
-	authSrv, err := auth.NewAuthService(clientRepo)
+	authSrv, err := auth.NewAuthService(pgxClientRepo)
 	if err != nil {
 		panic(fmt.Sprintf("could not create auth service: %s", err))
 	}
