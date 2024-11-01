@@ -4,9 +4,9 @@ import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
 	"log"
+	"net/http"
 	"strings"
 	"text-to-api/internal/domain"
-	"text-to-api/internal/handlers"
 	hdlPorts "text-to-api/internal/handlers/ports"
 	"text-to-api/internal/ports"
 )
@@ -78,13 +78,7 @@ func (h *AuthMdlwHdl) Auth(authType domain.AuthType) fiber.Handler {
 			authErr = errors.New("invalid auth type")
 		}
 		if authErr != nil {
-			if errors.Is(authErr, domain.ErrorNotFound) {
-				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-					"error": "Unauthorized, invalid API key",
-				})
-			}
-			httpStatusCode, message := handlers.ToHTTPError(authErr)
-			return c.Status(httpStatusCode).JSON(fiber.Map{"error": message})
+			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid API Key or token"})
 		}
 
 		h.reqCtxHdl.SetClientID(c, authResult.ClientID)
