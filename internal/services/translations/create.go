@@ -31,7 +31,7 @@ func (s service) Create(ctx context.Context, request domain.TranslationRequest, 
 	}
 
 	// Get User from repository
-	user, err := s.userRepo.GetByID(ctx, reqCtx.Environment, reqCtx.ClientID, reqCtx.UserID)
+	user, err := s.userRepo.GetByID(ctx, *reqCtx.Environment, reqCtx.ClientID, reqCtx.UserID)
 	if err != nil && !errors.Is(err, domain.ErrorNotFound) {
 		return nil, fmt.Errorf("could not get user: %w", err)
 	}
@@ -66,7 +66,7 @@ func (s service) Create(ctx context.Context, request domain.TranslationRequest, 
 				ID:       reqCtx.UserID,
 				Metadata: newUserMetadata,
 			}
-			err := s.userRepo.Insert(ctx, reqCtx.Environment, user)
+			err := s.userRepo.Insert(ctx, *reqCtx.Environment, user)
 			if err != nil {
 				s.logger.Error(ctx, "Error saving user", "error", err)
 			}
@@ -76,7 +76,7 @@ func (s service) Create(ctx context.Context, request domain.TranslationRequest, 
 		// If user was not nil, we update the user metadata only if it was changed
 		if !user.Metadata.Equals(newUserMetadata) {
 			user.Metadata = newUserMetadata
-			err := s.userRepo.Update(ctx, reqCtx.Environment, user)
+			err := s.userRepo.Update(ctx, *reqCtx.Environment, user)
 			if err != nil {
 				s.logger.Error(ctx, "Error updating user", "error", err)
 			}

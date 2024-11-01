@@ -1,7 +1,16 @@
 package domain
 
-// AuthParams represents the parameters required to authenticate a request using an API key.
-type AuthParams struct {
-	APIKey string
-	UserID string
+// AuthType represents the type of authentication.
+type AuthType int
+
+// AuthType constants.
+const (
+	AuthTypeAPIKey AuthType = iota
+	AuthTypeToken
+)
+
+// AuthResult represents the result of an authentication.
+type AuthResult struct {
+	ClientID    string
+	Environment *RequestEnvironment
 }

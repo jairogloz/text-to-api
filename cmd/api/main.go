@@ -3,17 +3,21 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"log"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
+	"text-to-api/internal/domain"
 	"text-to-api/internal/handlers/middleware"
+	"text-to-api/internal/handlers/request_context"
+	"text-to-api/internal/handlers/stripe"
 	"text-to-api/internal/handlers/translations"
 	"text-to-api/internal/repositories/mongo"
 	"text-to-api/internal/repositories/mongo/user"
 	"text-to-api/internal/repositories/postgres"
-	client2 "text-to-api/internal/repositories/postgres/client"
+	"text-to-api/internal/repositories/postgres/client"
 	"text-to-api/internal/server"
 	"text-to-api/internal/services/auth"
 	translationsService "text-to-api/internal/services/translations"
@@ -58,7 +62,7 @@ func main() {
 	}
 	defer disconnectFunc()
 
-	pgxClientRepo, err := client2.NewClientRepository(pgxPool)
+	pgxClientRepo, err := client.NewClientRepository(pgxPool)
 	if err != nil {
 		panic(fmt.Sprintf("could not create client repository: %s", err))
 	}
@@ -89,17 +93,52 @@ func main() {
 		panic(fmt.Sprintf("could not create translations handler: %s", err))
 	}
 
+	stripeHdl, err := stripe.NewStripeHandler(os.Getenv("STRIPE_API_KEY"),
+		os.Getenv("STRIPE_SUCCESS_URL"),
+		os.Getenv("STRIPE_CANCEL_URL"))
+	if err != nil {
+		panic(fmt.Sprintf("could not create stripe handler: %s", err))
+	}
+
 	srv := server.New()
 
-	authSrv, err := auth.NewAuthService(pgxClientRepo)
+	jwtSecretKey := os.Getenv("SUPABASE_JWT_SECRET")
+	if jwtSecretKey == "" {
+		panic("SUPABASE_JWT_SECRET is required")
+	}
+	authSrv, err := auth.NewAuthService(pgxClientRepo, []byte(jwtSecretKey), logger)
 	if err != nil {
 		panic(fmt.Sprintf("could not create auth service: %s", err))
 	}
 
-	// Register the auth middleware globally
-	srv.App.Use(middleware.AuthMiddleware(authSrv))
+	// Register the CORS middleware globally
+	srv.App.Use(cors.New(cors.Config{
+		AllowOrigins:     "*",
+		AllowMethods:     "GET,POST,PUT,DELETE",
+		AllowHeaders:     "*",
+		AllowCredentials: false,
+	}))
 
-	srv.App.Post("/v1/translations", hdl.Create)
+	reqCtxHdl := request_context.NewRequestContextHandler()
+	authMdlw, err := middleware.NewAuthMdlwHdl(authSrv, logger, reqCtxHdl)
+	if err != nil {
+		panic(fmt.Sprintf("could not create auth middleware handler: %s", err))
+	}
+
+	headersMdlw, err := middleware.NewHeadersMdlwHdl(logger, reqCtxHdl)
+	if err != nil {
+		panic(fmt.Sprintf("could not create headers middleware handler: %s", err))
+	}
+
+	apiKeyAuthGroup := srv.App.Group("/v1/translations", authMdlw.Auth(domain.AuthTypeAPIKey), headersMdlw.ForceHeaders([]string{"User-Id"}))
+
+	tokenAuthGroup := srv.App.Group("/v1/checkout-session", authMdlw.Auth(domain.AuthTypeToken), headersMdlw.ForceHeaders([]string{"Environment"}))
+
+	// Register the translations handler
+	apiKeyAuthGroup.Post("/", hdl.Create)
+
+	// Register the Stripe checkout-session handler
+	tokenAuthGroup.Post("/", stripeHdl.CreateCheckoutSession)
 
 	// Todo: potentially delete the following handlers
 	srv.App.Get("/", srv.HelloWorldHandler)

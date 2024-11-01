@@ -12,7 +12,7 @@ const (
 // RequestContext represents the context of a request.
 type RequestContext struct {
 	ClientID    string
-	Environment RequestEnvironment
+	Environment *RequestEnvironment
 	UserID      string
 }
 
@@ -21,11 +21,28 @@ func (rc *RequestContext) Validate() error {
 	if rc.ClientID == "" {
 		return fmt.Errorf("clientID is required")
 	}
-	if rc.Environment == "" {
+	if rc.Environment == nil {
 		return fmt.Errorf("environment is required")
 	}
 	if rc.UserID == "" {
 		return fmt.Errorf("userID is required")
 	}
 	return nil
+}
+
+// NewRequestEnvironment creates a new RequestEnvironment based on the provided environment string.
+// It returns an error if the provided environment string is not valid.
+//
+// Parameters:
+//   - env: The environment string, which should be either "live" or "sandbox".
+//
+// Returns:
+//   - A pointer to a RequestEnvironment if the environment string is valid.
+//   - An error if the environment string is invalid.
+func NewRequestEnvironment(env string) (*RequestEnvironment, error) {
+	if env != string(RequestEnvironmentLive) && env != string(RequestEnvironmentSandbox) {
+		return nil, fmt.Errorf("%w: invalid environment '%s'", ErrorValidation, env)
+	}
+	e := RequestEnvironment(env)
+	return &e, nil
 }
