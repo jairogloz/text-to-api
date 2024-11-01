@@ -59,6 +59,12 @@ func (h *HeadersMdlwHdl) ForceHeaders(headers []string) fiber.Handler {
 				h.reqCtxHdl.SetUserID(c, userID)
 			case "Environment":
 				e := c.Get("Environment")
+				if e == "" {
+					httpStatusCode, msg := handlers.ToHTTPError(fmt.Errorf("%w: missing Environment header", domain.ErrorValidation))
+					return c.Status(httpStatusCode).JSON(fiber.Map{
+						"error": msg,
+					})
+				}
 				environment, err := domain.NewRequestEnvironment(e)
 				if err != nil {
 					httpStatusCode, msg := handlers.ToHTTPError(err)
