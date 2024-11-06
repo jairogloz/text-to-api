@@ -20,6 +20,7 @@ import (
 	"text-to-api/internal/repositories/postgres/client"
 	"text-to-api/internal/server"
 	"text-to-api/internal/services/auth"
+	stripeAPIHandler "text-to-api/internal/services/stripe"
 	translationsService "text-to-api/internal/services/translations"
 	"text-to-api/internal/translators/openai"
 	"text-to-api/internal/zap"
@@ -93,9 +94,15 @@ func main() {
 		panic(fmt.Sprintf("could not create translations handler: %s", err))
 	}
 
-	stripeHdl, err := stripe.NewStripeHandler(os.Getenv("STRIPE_API_KEY"),
+	stripeSrv, err := stripeAPIHandler.NewStripeAPIHandler(os.Getenv("STRIPE_API_KEY"),
 		os.Getenv("STRIPE_SUCCESS_URL"),
-		os.Getenv("STRIPE_CANCEL_URL"))
+		os.Getenv("STRIPE_CANCEL_URL"),
+		logger)
+	if err != nil {
+		panic(fmt.Sprintf("could not create stripe service: %s", err))
+	}
+
+	stripeHdl, err := stripe.NewStripeHandler(stripeSrv)
 	if err != nil {
 		panic(fmt.Sprintf("could not create stripe handler: %s", err))
 	}

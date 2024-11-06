@@ -2,8 +2,7 @@ package stripe
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/stripe/stripe-go/v80"
-	"github.com/stripe/stripe-go/v80/checkout/session"
+	"text-to-api/internal/handlers"
 )
 
 // createCheckoutSessionRequest is the request body for the CreateCheckoutSession handler.
@@ -28,22 +27,11 @@ func (h *Handler) CreateCheckoutSession(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Failed to parse request body"})
 	}
 
-	// Create the newSession
-	params := &stripe.CheckoutSessionParams{
-		LineItems: []*stripe.CheckoutSessionLineItemParams{
-			{
-				Price:    stripe.String(requestBody.PriceID),
-				Quantity: stripe.Int64(1),
-			},
-		},
-		Mode:       stripe.String(string(stripe.CheckoutSessionModeSubscription)),
-		SuccessURL: stripe.String(h.CheckoutSuccessURL),
-		CancelURL:  stripe.String(h.CheckoutCancelURL),
-	}
-
-	newSession, err := session.New(params)
+	// Check if user has an active customer_id and subscription already
+	newSession, err := h.StripeHandler.CreateCheckoutSession(c.Context(), requestBody.PriceID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create new session"})
+		httpStatusCode, message := handlers.ToHTTPError(err)
+		return c.Status(httpStatusCode).JSON(fiber.Map{"error": message})
 	}
 
 	// Respond with the newSession ID
