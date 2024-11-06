@@ -20,7 +20,7 @@ func NewRequestContextHandler() ports.RequestContextHandler {
 // GetClientID retrieves the client ID from the request context.
 // It returns an empty string if the client ID is not found.
 func (h handler) GetClientID(c *fiber.Ctx) string {
-	reqContext, ok := c.Locals(domain.CtxKeyRequestContext).(domain.RequestContext)
+	reqContext, ok := c.Locals(domain.CtxKeyRequestContext).(*domain.RequestContext)
 	if !ok {
 		return ""
 	}
@@ -28,19 +28,19 @@ func (h handler) GetClientID(c *fiber.Ctx) string {
 }
 
 // GetEnvironment retrieves the environment from the request context.
-// It returns nil if the environment is not found.
-func (h handler) GetEnvironment(c *fiber.Ctx) *domain.RequestEnvironment {
-	reqContext, ok := c.Locals(domain.CtxKeyRequestContext).(domain.RequestContext)
-	if !ok {
-		return nil
+// It returns empty string if the environment is not found.
+func (h handler) GetEnvironment(c *fiber.Ctx) domain.RequestEnvironment {
+	reqContext, ok := c.Locals(domain.CtxKeyRequestContext).(*domain.RequestContext)
+	if !ok || reqContext == nil || reqContext.Environment == nil {
+		return ""
 	}
-	return reqContext.Environment
+	return *reqContext.Environment
 }
 
 // GetUserID retrieves the user ID from the request context.
 // It returns an empty string if the user ID is not found.
 func (h handler) GetUserID(c *fiber.Ctx) string {
-	reqContext, ok := c.Locals(domain.CtxKeyRequestContext).(domain.RequestContext)
+	reqContext, ok := c.Locals(domain.CtxKeyRequestContext).(*domain.RequestContext)
 	if !ok {
 		return ""
 	}
@@ -61,15 +61,15 @@ func (h handler) SetClientID(c *fiber.Ctx, clientID string) {
 }
 
 // SetEnvironment sets the environment in the request context.
-func (h handler) SetEnvironment(c *fiber.Ctx, environment *domain.RequestEnvironment) {
+func (h handler) SetEnvironment(c *fiber.Ctx, environment domain.RequestEnvironment) {
 	reqContext, ok := c.Locals(domain.CtxKeyRequestContext).(*domain.RequestContext)
 	if ok {
-		reqContext.Environment = environment
+		reqContext.Environment = &environment
 		c.Locals(domain.CtxKeyRequestContext, reqContext)
 		return
 	}
 	c.Locals(domain.CtxKeyRequestContext, &domain.RequestContext{
-		Environment: environment,
+		Environment: &environment,
 	})
 }
 

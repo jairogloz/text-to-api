@@ -10,14 +10,19 @@ import (
 // perform storage operations for users against a postgres database.
 // Notice that a client is the same that a Supabase user
 type repository struct {
-	pool *pgxpool.Pool
+	logger ports.Logger
+	pool   *pgxpool.Pool
 }
 
-func NewClientRepository(pool *pgxpool.Pool) (ports.ClientRepository, error) {
+func NewClientRepository(l ports.Logger, pool *pgxpool.Pool) (ports.ClientRepository, error) {
 	r := &repository{
-		pool: pool,
+		logger: l,
+		pool:   pool,
 	}
 
+	if r.logger == nil {
+		return nil, fmt.Errorf("a logger is required")
+	}
 	if r.pool == nil {
 		return nil, fmt.Errorf("a connection pool is required")
 	}

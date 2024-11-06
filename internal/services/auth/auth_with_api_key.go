@@ -30,7 +30,7 @@ func (s *service) AuthWithAPIKey(ctx context.Context, apiKey string) (*domain.Au
 
 	return &domain.AuthResult{
 		ClientID:    client.ID,
-		Environment: &apiKeyObject.Environment,
+		Environment: apiKeyObject.Environment,
 	}, nil
 
 }

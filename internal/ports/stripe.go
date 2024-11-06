@@ -7,5 +7,5 @@ import (
 
 // StripeAPIHandler exposes methods to interact with the Stripe API.
 type StripeAPIHandler interface {
-	CreateCheckoutSession(ctx context.Context, priceId string) (*stripe.CheckoutSession, error)
+	CreateCheckoutSession(ctx context.Context, clientId string, priceId string) (*stripe.CheckoutSession, error)
 }

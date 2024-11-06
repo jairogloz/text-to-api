@@ -12,5 +12,5 @@ const (
 // AuthResult represents the result of an authentication.
 type AuthResult struct {
 	ClientID    string
-	Environment *RequestEnvironment
+	Environment RequestEnvironment
 }

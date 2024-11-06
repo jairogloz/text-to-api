@@ -37,12 +37,12 @@ func (rc *RequestContext) Validate() error {
 //   - env: The environment string, which should be either "live" or "sandbox".
 //
 // Returns:
-//   - A pointer to a RequestEnvironment if the environment string is valid.
+//   - The RequestEnvironment if the environment string is valid.
 //   - An error if the environment string is invalid.
-func NewRequestEnvironment(env string) (*RequestEnvironment, error) {
+func NewRequestEnvironment(env string) (RequestEnvironment, error) {
 	if env != string(RequestEnvironmentLive) && env != string(RequestEnvironmentSandbox) {
-		return nil, fmt.Errorf("%w: invalid environment '%s'", ErrorValidation, env)
+		return "", fmt.Errorf("%w: invalid environment '%s'", ErrorValidation, env)
 	}
 	e := RequestEnvironment(env)
-	return &e, nil
+	return e, nil
 }

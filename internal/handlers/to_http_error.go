@@ -12,5 +12,5 @@ func ToHTTPError(err error) (httpStatusCode int, message string) {
 	if errors.Is(err, domain.ErrorValidation) {
 		return fiber.StatusBadRequest, fmt.Sprintf("Validation error: %s", err.Error())
 	}
-	return fiber.StatusInternalServerError, "Internal server error"
+	return fiber.StatusInternalServerError, domain.ErrorMessageInternalServerError
 }

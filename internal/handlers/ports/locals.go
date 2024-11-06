@@ -9,9 +9,9 @@ import (
 // in a RequestContext object stored in a fiber context.
 type RequestContextHandler interface {
 	GetClientID(c *fiber.Ctx) string
-	GetEnvironment(c *fiber.Ctx) *domain.RequestEnvironment
+	GetEnvironment(c *fiber.Ctx) domain.RequestEnvironment
 	GetUserID(c *fiber.Ctx) string
 	SetClientID(c *fiber.Ctx, clientID string)
-	SetEnvironment(c *fiber.Ctx, environment *domain.RequestEnvironment)
+	SetEnvironment(c *fiber.Ctx, environment domain.RequestEnvironment)
 	SetUserID(c *fiber.Ctx, userID string)
 }

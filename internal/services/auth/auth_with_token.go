@@ -55,9 +55,9 @@ func (s *service) AuthWithToken(ctx context.Context, token string) (*domain.Auth
 	}
 
 	// When authenticating with token, the environment can't be determined so is set
-	// to nil in the AuthResult. The environment can be determined by other means
+	// to empty string in the AuthResult. The environment can be determined by other means
 	// like a middleware reading a specific request header.
-	authResult.Environment = nil
+	authResult.Environment = ""
 
 	return authResult, nil
 }

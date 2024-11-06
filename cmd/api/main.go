@@ -63,7 +63,7 @@ func main() {
 	}
 	defer disconnectFunc()
 
-	pgxClientRepo, err := client.NewClientRepository(pgxPool)
+	pgxClientRepo, err := client.NewClientRepository(logger, pgxPool)
 	if err != nil {
 		panic(fmt.Sprintf("could not create client repository: %s", err))
 	}
@@ -94,15 +94,13 @@ func main() {
 		panic(fmt.Sprintf("could not create translations handler: %s", err))
 	}
 
-	stripeSrv, err := stripeAPIHandler.NewStripeAPIHandler(os.Getenv("STRIPE_API_KEY"),
-		os.Getenv("STRIPE_SUCCESS_URL"),
-		os.Getenv("STRIPE_CANCEL_URL"),
-		logger)
+	stripeSrv, err := stripeAPIHandler.NewStripeAPIHandler(os.Getenv("STRIPE_API_KEY"), os.Getenv("STRIPE_SUCCESS_URL"), os.Getenv("STRIPE_CANCEL_URL"), logger, pgxClientRepo)
 	if err != nil {
 		panic(fmt.Sprintf("could not create stripe service: %s", err))
 	}
 
-	stripeHdl, err := stripe.NewStripeHandler(stripeSrv)
+	reqCtxHdl := request_context.NewRequestContextHandler()
+	stripeHdl, err := stripe.NewStripeHandler(logger, stripeSrv, reqCtxHdl)
 	if err != nil {
 		panic(fmt.Sprintf("could not create stripe handler: %s", err))
 	}
@@ -126,7 +124,6 @@ func main() {
 		AllowCredentials: false,
 	}))
 
-	reqCtxHdl := request_context.NewRequestContextHandler()
 	authMdlw, err := middleware.NewAuthMdlwHdl(authSrv, logger, reqCtxHdl)
 	if err != nil {
 		panic(fmt.Sprintf("could not create auth middleware handler: %s", err))

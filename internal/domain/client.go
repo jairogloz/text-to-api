@@ -7,13 +7,20 @@ const CollNameClients = "clients"
 // A Client represents a client in the system. A client can have multiple
 // API keys.
 type Client struct {
-	ID           string    `json:"id" bson:"id"`
-	Name         string    `json:"name" bson:"name"`
+	CreatedAt    time.Time `json:"created_at" bson:"created_at"`
+	CustomerID   *string   `json:"customer_id" bson:"customer_id"`
 	Email        string    `json:"email" bson:"email"`
+	ID           string    `json:"id" bson:"id"`
+	LastSignInAt time.Time `json:"last_sign_in_at" bson:"last_sign_in_at"`
+	Name         string    `json:"name" bson:"name"`
 	Phone        *string   `json:"phone" bson:"phone"`
 	Providers    []string  `json:"providers" bson:"providers"`
-	CreatedAt    time.Time `json:"created_at" bson:"created_at"`
-	LastSignInAt time.Time `json:"last_sign_in_at" bson:"last_sign_in_at"`
+}
+
+// ClientDataUpdate represents the parameters that can be updated on a client's data.
+// Client data is stored on a separate table/collection from the rest of the client data.
+type ClientDataUpdate struct {
+	CustomerID *string `json:"customer_id" bson:"customer_id"`
 }
 
 // APIKey represents an API key in the system. A Client can have
