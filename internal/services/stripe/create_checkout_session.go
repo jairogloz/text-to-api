@@ -37,6 +37,8 @@ func (h apiHandler) CreateCheckoutSession(ctx context.Context, clientId string, 
 	}
 
 	params := &stripe.CheckoutSessionParams{
+		CancelURL:         stripe.String(h.checkoutCancelURL),
+		ClientReferenceID: stripe.String(clientId), // This is the supabase user_id, will be useful to link the stripe customer_id to the user when the session is completed
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
 			{
 				Price:    stripe.String(priceId),
@@ -45,7 +47,6 @@ func (h apiHandler) CreateCheckoutSession(ctx context.Context, clientId string, 
 		},
 		Mode:       stripe.String(string(stripe.CheckoutSessionModeSubscription)),
 		SuccessURL: stripe.String(h.checkoutSuccessURL),
-		CancelURL:  stripe.String(h.checkoutCancelURL),
 	}
 
 	// Get client(user) from database
@@ -65,19 +66,6 @@ func (h apiHandler) CreateCheckoutSession(ctx context.Context, clientId string, 
 	if err != nil {
 		h.logger.Error(ctx, "Failed to create new stripe checkout session", "error", err)
 		return nil, fmt.Errorf("failed to create new stripe checkout session: %w", err)
-	}
-
-	// Todo: this needs to be done in the stripe webhook AFTER the session has been completed
-	// as at this point it is more likely that the session will have a nil customer
-	if client.CustomerID == nil {
-		if newSession.Customer != nil {
-			err = h.clientRepo.UpsertClientData(ctx, client.ID, &domain.ClientDataUpdate{CustomerID: &newSession.Customer.ID})
-			if err != nil {
-				h.logger.Warn(ctx, "Failed to update client with stripe customer ID", "error", err)
-			}
-		} else {
-			h.logger.Warn(ctx, "stripe session returned without customer ID")
-		}
 	}
 
 	return newSession, nil

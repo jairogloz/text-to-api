@@ -14,6 +14,7 @@ const queryGetClientByID = `SELECT
     u.phone,
     u.created_at AS user_created_at,
     u.last_sign_in_at,
+    ud.subscription_id,
     ud.customer_id
 FROM 
     auth.users u
@@ -47,6 +48,7 @@ func (r repository) GetByID(ctx context.Context, clientID string) (*domain.Clien
 		&client.Phone,
 		&client.CreatedAt,
 		&client.LastSignInAt,
+		&client.SubscriptionID,
 		&client.CustomerID,
 	)
 	if err != nil {

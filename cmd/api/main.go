@@ -100,7 +100,7 @@ func main() {
 	}
 
 	reqCtxHdl := request_context.NewRequestContextHandler()
-	stripeHdl, err := stripe.NewStripeHandler(logger, stripeSrv, reqCtxHdl)
+	stripeHdl, err := stripe.NewStripeHandler(logger, stripeSrv, reqCtxHdl, os.Getenv("STRIPE_WEBHOOK_SECRET"))
 	if err != nil {
 		panic(fmt.Sprintf("could not create stripe handler: %s", err))
 	}
@@ -134,15 +134,18 @@ func main() {
 		panic(fmt.Sprintf("could not create headers middleware handler: %s", err))
 	}
 
-	apiKeyAuthGroup := srv.App.Group("/v1/translations", authMdlw.Auth(domain.AuthTypeAPIKey), headersMdlw.ForceHeaders([]string{"User-Id"}))
-
-	tokenAuthGroup := srv.App.Group("/v1/checkout-session", authMdlw.Auth(domain.AuthTypeToken), headersMdlw.ForceHeaders([]string{"Environment"}))
+	translationsGroup := srv.App.Group("/v1/translations", authMdlw.Auth(domain.AuthTypeAPIKey), headersMdlw.ForceHeaders([]string{"User-Id"}))
 
 	// Register the translations handler
-	apiKeyAuthGroup.Post("/", hdl.Create)
+	translationsGroup.Post("/", hdl.Create)
+
+	checkoutSessionGroup := srv.App.Group("/v1/checkout-session", authMdlw.Auth(domain.AuthTypeToken), headersMdlw.ForceHeaders([]string{"Environment"}))
 
 	// Register the Stripe checkout-session handler
-	tokenAuthGroup.Post("/", stripeHdl.CreateCheckoutSession)
+	checkoutSessionGroup.Post("/", stripeHdl.CreateCheckoutSession)
+
+	stripeWebhookGroup := srv.App.Group("/v1/stripe")
+	stripeWebhookGroup.Post("/webhook", stripeHdl.StripeWebhook)
 
 	// Todo: potentially delete the following handlers
 	srv.App.Get("/", srv.HelloWorldHandler)
