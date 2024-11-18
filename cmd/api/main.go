@@ -21,6 +21,7 @@ import (
 	"text-to-api/internal/server"
 	"text-to-api/internal/services/auth"
 	stripeAPIHandler "text-to-api/internal/services/stripe"
+	"text-to-api/internal/services/subscription"
 	translationsService "text-to-api/internal/services/translations"
 	"text-to-api/internal/translators/openai"
 	"text-to-api/internal/zap"
@@ -134,7 +135,20 @@ func main() {
 		panic(fmt.Sprintf("could not create headers middleware handler: %s", err))
 	}
 
-	translationsGroup := srv.App.Group("/v1/translations", authMdlw.Auth(domain.AuthTypeAPIKey), headersMdlw.ForceHeaders([]string{"User-Id"}))
+	subsSrv, err := subscription.NewSubscriptionService(pgxClientRepo, logger, stripeSrv)
+	if err != nil {
+		panic(fmt.Sprintf("could not create subscription service: %s", err))
+	}
+
+	subsMdlw, err := middleware.NewCheckSubscriptionMdlw(logger, reqCtxHdl, subsSrv)
+	if err != nil {
+		panic(fmt.Sprintf("could not create check subscription middleware: %s", err))
+	}
+
+	translationsGroup := srv.App.Group("/v1/translations",
+		authMdlw.Auth(domain.AuthTypeAPIKey),
+		subsMdlw.CheckSubscription(),
+		headersMdlw.ForceHeaders([]string{"User-Id"}))
 
 	// Register the translations handler
 	translationsGroup.Post("/", hdl.Create)

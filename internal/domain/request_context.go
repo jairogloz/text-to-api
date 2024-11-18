@@ -11,9 +11,11 @@ const (
 
 // RequestContext represents the context of a request.
 type RequestContext struct {
-	ClientID    string
-	Environment *RequestEnvironment
-	UserID      string
+	Client       *Client
+	ClientID     string
+	Environment  *RequestEnvironment
+	Subscription *Subscription
+	UserID       string
 }
 
 // Validate validates the request context.
