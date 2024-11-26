@@ -8,7 +8,7 @@ import (
 	"text-to-api/internal/domain"
 )
 
-const queryGetClientByID = `SELECT 
+const QueryGetClientByID = `SELECT 
     u.id,
     u.email,
     u.phone,
@@ -40,7 +40,7 @@ WHERE
 func (r repository) GetByID(ctx context.Context, clientID string) (*domain.Client, error) {
 	client := &domain.Client{}
 
-	row := r.pool.QueryRow(ctx, queryGetClientByID, clientID)
+	row := r.pool.QueryRow(ctx, QueryGetClientByID, clientID)
 
 	err := row.Scan(
 		&client.ID,
@@ -56,6 +56,7 @@ func (r repository) GetByID(ctx context.Context, clientID string) (*domain.Clien
 			return nil, fmt.Errorf("%w: client with id '%s' not found", domain.ErrorNotFound, clientID)
 		}
 		r.logger.Error(ctx, "error scanning client by id", "error", err)
+		return nil, fmt.Errorf("failed to scan client by id: %w", err)
 	}
 
 	return client, nil

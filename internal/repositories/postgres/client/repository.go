@@ -2,8 +2,8 @@ package client
 
 import (
 	"fmt"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"text-to-api/internal/ports"
+	postgresPorts "text-to-api/internal/repositories/postgres/ports"
 )
 
 // repository implements ports.ClientRepository and holds all the required components to
@@ -11,10 +11,10 @@ import (
 // Notice that a client is the same that a Supabase user
 type repository struct {
 	logger ports.Logger
-	pool   *pgxpool.Pool
+	pool   postgresPorts.PgxPool
 }
 
-func NewClientRepository(l ports.Logger, pool *pgxpool.Pool) (ports.ClientRepository, error) {
+func NewClientRepository(l ports.Logger, pool postgresPorts.PgxPool) (ports.ClientRepository, error) {
 	r := &repository{
 		logger: l,
 		pool:   pool,

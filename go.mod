@@ -6,9 +6,10 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/jackc/pgx/v5 v5.7.1
+	github.com/jairogloz/pgxpoolmock v1.1.2-jairogloz
 	github.com/joho/godotenv v1.5.1
 	github.com/sashabaranov/go-openai v1.32.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/stripe/stripe-go/v80 v80.2.1
 	github.com/valyala/fasthttp v1.56.0
 	go.mongodb.org/mongo-driver v1.17.1
