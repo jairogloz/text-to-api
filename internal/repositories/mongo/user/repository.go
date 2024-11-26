@@ -19,10 +19,12 @@ type repository struct {
 // NewUserRepository returns a new instance of repository implementing the ports.UserRepository interface.
 func NewUserRepository(mongoClient *mongo.Client, log ports.Logger, dbName string) (ports.UserRepository, error) {
 	userCollectionLive := mongoClient.Database(dbName).Collection(domain.CollNameUsers)
+	userCollectionSandbox := mongoClient.Database(dbName).Collection(domain.CollNameUsersSandbox)
 	r := &repository{
-		userCollectionLive: userCollectionLive,
-		logger:             log,
-		timeout:            time.Second * 60,
+		userCollectionLive:    userCollectionLive,
+		userCollectionSandbox: userCollectionSandbox,
+		logger:                log,
+		timeout:               time.Second * 60,
 	}
 	return r, nil
 }

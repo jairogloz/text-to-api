@@ -8,10 +8,11 @@ require (
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/joho/godotenv v1.5.1
 	github.com/sashabaranov/go-openai v1.32.0
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.9.0
 	github.com/stripe/stripe-go/v80 v80.2.1
 	github.com/valyala/fasthttp v1.56.0
 	go.mongodb.org/mongo-driver v1.17.1
+	go.uber.org/mock v0.5.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.27.0
 )

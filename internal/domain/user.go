@@ -1,6 +1,7 @@
 package domain
 
 const CollNameUsers = "users"
+const CollNameUsersSandbox = "users-sandbox"
 
 // User represents an end-user of the API. A client can have multiple users.
 type User struct {
