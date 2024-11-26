@@ -20,6 +20,16 @@ func TestRepository_Insert(t *testing.T) {
 
 	logger := mocks.NewMockLogger(ctrl)
 
+	mt.Run("nil user", func(mtSubtest *mtest.T) {
+		r, err := user.NewUserRepository(mtSubtest.DB.Client(), logger, "test-db")
+		if err != nil {
+			mtSubtest.Fatalf("error creating new User repository: %s", err.Error())
+		}
+		err = r.Insert(context.Background(), domain.RequestEnvironmentLive, nil)
+		assert.Error(mtSubtest, err)
+		assert.Equal(mtSubtest, "user is required", err.Error())
+	})
+
 	mt.Run("insertOne succeeds: live", func(mtSubtest *mtest.T) {
 		r, err := user.NewUserRepository(mtSubtest.DB.Client(), logger, "test-db")
 		if err != nil {

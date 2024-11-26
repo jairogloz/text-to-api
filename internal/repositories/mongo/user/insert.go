@@ -17,6 +17,10 @@ import (
 // Returns:
 //   - An error if there is a database insertion error.
 func (r repository) Insert(ctx context.Context, reqEnv domain.RequestEnvironment, user *domain.User) error {
+	if user == nil {
+		return fmt.Errorf("user is required")
+	}
+
 	// We start assuming that environment is live
 	coll := r.userCollectionLive
 	if reqEnv == domain.RequestEnvironmentSandbox {
