@@ -56,7 +56,7 @@ func (h apiHandler) CreateCheckoutSession(ctx context.Context, clientId string, 
 		return nil, fmt.Errorf("failed to get client: %w", err)
 	}
 	// Check if client has a stripe customer_id
-	if client.CustomerID != nil {
+	if client != nil && client.CustomerID != nil {
 		// Get stripe customer
 		// todo: Issue #1 If she has, check if client has an active subscription, if so, return an error, if not, create a new session specifying the customer_id
 		params.Customer = stripe.String(*client.CustomerID)
