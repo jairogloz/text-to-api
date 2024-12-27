@@ -10,6 +10,8 @@ import (
 // ToHTTPError returns the appropriate HTTP status code and message for the given error.
 func ToHTTPError(err error) (httpStatusCode int, message string) {
 	switch {
+	case errors.Is(err, domain.ErrorAPIKeyRevoked):
+		return fiber.StatusForbidden, "API key is revoked. Access denied."
 	case errors.Is(err, domain.ErrorNotFound):
 		return fiber.StatusNotFound, fmt.Sprintf("Not found: %s", err.Error())
 	case errors.Is(err, domain.ErrorSubscriptionCanceled):

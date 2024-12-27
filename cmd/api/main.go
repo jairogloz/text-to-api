@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"syscall"
 	"text-to-api/internal/domain"
+	"text-to-api/internal/handlers/api_key"
 	"text-to-api/internal/handlers/middleware"
 	"text-to-api/internal/handlers/request_context"
 	"text-to-api/internal/handlers/stripe"
@@ -17,8 +18,10 @@ import (
 	"text-to-api/internal/repositories/mongo"
 	"text-to-api/internal/repositories/mongo/user"
 	"text-to-api/internal/repositories/postgres"
+	apikeyrepo "text-to-api/internal/repositories/postgres/api_key"
 	"text-to-api/internal/repositories/postgres/client"
 	"text-to-api/internal/server"
+	api_key2 "text-to-api/internal/services/api_key"
 	"text-to-api/internal/services/auth"
 	stripeAPIHandler "text-to-api/internal/services/stripe"
 	"text-to-api/internal/services/subscription"
@@ -160,6 +163,22 @@ func main() {
 
 	stripeWebhookGroup := srv.App.Group("/v1/stripe")
 	stripeWebhookGroup.Post("/webhook", stripeHdl.StripeWebhook)
+
+	// ================ APIKey management routes ================
+	apiKeyRepo, err := apikeyrepo.NewAPIKeyRepository(logger, pgxPool)
+	if err != nil {
+		panic(fmt.Sprintf("could not create api key repository: %s", err))
+	}
+	apiKeyService, err := api_key2.NewAPIKeyService(logger, apiKeyRepo)
+	if err != nil {
+		panic(fmt.Sprintf("could not create api key service: %s", err))
+	}
+	apiKeyHandler, err := api_key.NewAPIKeyHandler(logger, reqCtxHdl, apiKeyService)
+	if err != nil {
+		panic(fmt.Sprintf("could not create api key handler: %s", err))
+	}
+	apiKeyGroup := srv.App.Group("/v1/api-keys", authMdlw.Auth(domain.AuthTypeToken), headersMdlw.ForceHeaders([]string{"Environment"}))
+	apiKeyGroup.Post("/", apiKeyHandler.Create)
 
 	// Todo: potentially delete the following handlers
 	srv.App.Get("/", srv.HelloWorldHandler)
