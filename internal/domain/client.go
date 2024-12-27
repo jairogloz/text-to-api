@@ -26,14 +26,3 @@ type ClientDataUpdate struct {
 	CustomerID     *string `json:"customer_id" bson:"customer_id"`
 	SubscriptionID *string `json:"subscription_id" bson:"subscription_id"`
 }
-
-// APIKey represents an API key in the system. A Client can have
-// multiple API keys.
-// Todo: Add management fields like created_at, updated_at, etc.
-type APIKey struct {
-	CreatedAt   time.Time          `json:"created_at" bson:"created_at"`
-	Hash        string             `json:"hash" bson:"hash"`
-	Environment RequestEnvironment `json:"environment" bson:"environment"`
-	Status      string             `json:"status" bson:"status"`
-	UserID      string             `json:"user_id" bson:"user_id"`
-}

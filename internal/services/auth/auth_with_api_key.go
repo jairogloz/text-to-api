@@ -28,6 +28,10 @@ func (s *service) AuthWithAPIKey(ctx context.Context, apiKey string) (*domain.Au
 		return nil, fmt.Errorf("error getting client by apiKey: %w", err)
 	}
 
+	if apiKeyObject.Status == domain.APIKeyStatusRevoked {
+		return nil, domain.ErrorAPIKeyRevoked
+	}
+
 	return &domain.AuthResult{
 		ClientID:    client.ID,
 		Environment: apiKeyObject.Environment,

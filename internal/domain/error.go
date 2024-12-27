@@ -5,6 +5,7 @@ import "errors"
 const ErrorMessageInternalServerError = "Internal server error"
 
 var (
+	ErrorAPIKeyRevoked                 = errors.New("api_key_revoked")
 	ErrorNotFound                      = errors.New("not_found")
 	ErrorSubscriptionCanceled          = errors.New("subscription_canceled")
 	ErrorSubscriptionIncomplete        = errors.New("subscription_status_incomplete")
