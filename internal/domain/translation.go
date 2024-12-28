@@ -16,6 +16,9 @@ type TranslationRequest struct {
 }
 
 func (tr *TranslationRequest) Validate() error {
+	if tr.CurrentDate == "" {
+		return fmt.Errorf("%w: current date is required", ErrorValidation)
+	}
 	if tr.InputText == "" {
 		return fmt.Errorf("%w: input text is required", ErrorValidation)
 	}
