@@ -78,6 +78,9 @@ func (h *AuthMdlwHdl) Auth(authType domain.AuthType) fiber.Handler {
 			authErr = errors.New("invalid auth type")
 		}
 		if authErr != nil {
+			if errors.Is(authErr, domain.ErrorAPIKeyRevoked) {
+				return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "API Key revoked"})
+			}
 			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid API Key or token"})
 		}
 
