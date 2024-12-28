@@ -19,16 +19,28 @@ jobs:
         run: sudo docker rm -f text-to-api-container || true
       - name: Run Docker Container
         env:
-          MONGO_URI: ${{secrets.MONGO_URI}}
           MONGO_DB_NAME: ${{secrets.MONGO_DB_NAME}}
+          MONGO_URI: ${{secrets.MONGO_URI}}
           OPENAI_APIKEY: ${{secrets.OPENAI_APIKEY}}
           OPENAI_OBJECT_TRANSLATOR_ASSISTANT_ID: ${{secrets.OPENAI_OBJECT_TRANSLATOR_ASSISTANT_ID}}
           PORT: ${{secrets.PORT}}
+          POSTGRES_URI: ${{secrets.POSTGRES_URI}}
+          STRIPE_API_KEY: ${{secrets.STRIPE_API_KEY}}
+          STRIPE_CANCEL_URL: ${{secrets.STRIPE_CANCEL_URL}}
+          STRIPE_SUCCESS_URL: ${{secrets.STRIPE_SUCCESS_URL}}
+          STRIPE_WEBHOOK_SECRET: ${{secrets.STRIPE_WEBHOOK_SECRET}}
+          SUPABASE_JWT_SECRET: ${{secrets.SUPABASE_JWT_SECRET}}
         run: |
           sudo docker run -d --name text-to-api-container -p 8081:8081 \
-            -e MONGO_URI="${MONGO_URI}" \
             -e MONGO_DB_NAME="${MONGO_DB_NAME}" \
+            -e MONGO_URI="${MONGO_URI}" \
             -e OPENAI_APIKEY="${OPENAI_APIKEY}" \
             -e OPENAI_OBJECT_TRANSLATOR_ASSISTANT_ID="${OPENAI_OBJECT_TRANSLATOR_ASSISTANT_ID}" \
             -e PORT="${PORT}" \
+            -e POSTGRES_URI="${POSTGRES_URI}" \
+            -e STRIPE_API_KEY="${STRIPE_API_KEY}" \
+            -e STRIPE_CANCEL_URL="${STRIPE_CANCEL_URL}" \
+            -e STRIPE_SUCCESS_URL="${STRIPE_SUCCESS_URL}" \
+            -e STRIPE_WEBHOOK_SECRET="${STRIPE_WEBHOOK_SECRET}" \
+            -e SUPABASE_JWT_SECRET="${SUPABASE_JWT_SECRET}" \
             jairogloz/text-to-api:latest
