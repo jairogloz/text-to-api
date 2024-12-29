@@ -61,11 +61,6 @@ func main() {
 		panic(fmt.Sprintf("could not create logger: %s", err))
 	}
 
-	fmt.Println("Mongo URI", os.Getenv("MONGO_URI"))
-	fmt.Println("About to connect to postgres")
-	fmt.Println("POSTGRES_URI", os.Getenv("POSTGRES_URI"))
-	fmt.Println("MONGO_DB_NAME", os.Getenv("MONGO_DB_NAME"))
-	fmt.Println("STRIPE_SUCCESS_URL", os.Getenv("STRIPE_SUCCESS_URL"))
 	pgxPool, disconnectFunc, err := postgres.Connect(context.Background(), os.Getenv("POSTGRES_URI"))
 	if err != nil {
 		panic(fmt.Sprintf("could not connect to postgres: %s", err))
