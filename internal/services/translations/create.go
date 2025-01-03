@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"text-to-api/internal/domain"
+	"time"
 )
 
 // Create creates a new translation based on the user's request.
@@ -21,6 +22,10 @@ import (
 //   - An error if any issue occurs during the creation process.
 func (s service) Create(ctx context.Context, request domain.TranslationRequest, reqCtx domain.RequestContext) (*domain.Translation, error) {
 
+	// Todo: if reqCtx.Environment == "sandbox" use sandbox translation service
+	// Todo: handle subscription check
+
+	startValidation := time.Now().UTC()
 	if err := reqCtx.Validate(); err != nil {
 		s.logger.Error(ctx, "Invalid request context", "error", err)
 		return nil, fmt.Errorf("invalid request context: %w", err)
@@ -29,12 +34,15 @@ func (s service) Create(ctx context.Context, request domain.TranslationRequest, 
 		s.logger.Debug(ctx, "Invalid request", "error", err)
 		return nil, fmt.Errorf("invalid request: %w", err)
 	}
+	s.logger.Debug(ctx, "Validation time", "time", time.Since(startValidation).String())
 
 	// Get User from repository
+	startGetUser := time.Now().UTC()
 	user, err := s.userRepo.GetByID(ctx, *reqCtx.Environment, reqCtx.ClientID, reqCtx.UserID)
 	if err != nil && !errors.Is(err, domain.ErrorNotFound) {
 		return nil, fmt.Errorf("could not get user: %w", err)
 	}
+	s.logger.Debug(ctx, "Get user time", "time", time.Since(startGetUser).String())
 
 	var translation domain.Translation
 	var newUserMetadata domain.UserMetadata
@@ -42,11 +50,13 @@ func (s service) Create(ctx context.Context, request domain.TranslationRequest, 
 	switch request.TranslationType {
 	case domain.TranslationTypeObject:
 		// todo: Update user metadata if required, after translation
+		startTranslation := time.Now().UTC()
 		var mappedObject interface{}
 		mappedObject, newUserMetadata, err = s.translator.TranslateToObject(ctx, request, user)
 		if err != nil {
 			return nil, fmt.Errorf("could not translate prompt: %w", err)
 		}
+		s.logger.Debug(ctx, "Translation time", "time", time.Since(startTranslation).String())
 
 		translation = domain.Translation{
 			ID:                 "",

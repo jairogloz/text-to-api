@@ -45,6 +45,7 @@ func (t translator) TranslateToObject(ctx context.Context, translationRequest do
 	var run openai.Run
 	if threadID == "" {
 		t.logger.Debug(ctx, "No thread found for user, will create a new one", "userID", user)
+		startCreateThread := time.Now().UTC()
 		// there's no open thread for the user, so create a new thread and run with the prompt
 		run, err = t.client.CreateThreadAndRun(
 			ctx,
@@ -66,6 +67,7 @@ func (t translator) TranslateToObject(ctx context.Context, translationRequest do
 			t.logger.Error(ctx, "Error creating thread and run", "error", err)
 			return nil, nil, fmt.Errorf("could not create thread and run: %w", err)
 		}
+		t.logger.Debug(ctx, "Thread and run created", "time", time.Since(startCreateThread).String())
 		t.logger.Debug(ctx, "Thread and run created", "threadID", run.ThreadID, "runID", run.ID)
 
 		// As a new thread was created, we append it to the user metadata
@@ -80,6 +82,7 @@ func (t translator) TranslateToObject(ctx context.Context, translationRequest do
 		// Add message to thread
 		// Todo: once CreateRun can receive an openai.RunRequest with additional messages, use that instead
 		// and get rid of this CreateMessage part
+		startCreateMessage := time.Now().UTC()
 		_, err = t.client.CreateMessage(ctx, threadID, openai.MessageRequest{
 			Role:    string(openai.ThreadMessageRoleUser),
 			Content: string(requestAsJSON),
@@ -88,7 +91,10 @@ func (t translator) TranslateToObject(ctx context.Context, translationRequest do
 			t.logger.Error(ctx, "Error creating message", "error", err)
 			return nil, nil, fmt.Errorf("could not create message: %w", err)
 		}
+		t.logger.Debug(ctx, "Message created", "time", time.Since(startCreateMessage).String())
+
 		// Run thread
+		startCreateRun := time.Now().UTC()
 		run, err = t.client.CreateRun(ctx, threadID, openai.RunRequest{
 			AssistantID: t.assistantID,
 		})
@@ -96,22 +102,27 @@ func (t translator) TranslateToObject(ctx context.Context, translationRequest do
 			t.logger.Error(ctx, "Error creating run", "error", err)
 			return nil, nil, fmt.Errorf("could not create run: %w", err)
 		}
+		t.logger.Debug(ctx, "Run created", "time", time.Since(startCreateRun).String())
 	} // end of if/else
 
 	// Todo: register the average completion time to modify the wait time dynamically
+	startWaitForRunCompletion := time.Now().UTC()
 	err = waitForRunCompletion(ctx, t.logger, t.client, run.ThreadID, run.ID, 250*time.Millisecond)
 	if err != nil {
 		t.logger.Error(ctx, "Error waiting for run completion.", "error", err)
 		return nil, nil, fmt.Errorf("could not wait for run completion: %w", err)
 	}
+	t.logger.Debug(ctx, "Wait for run completion", "time", time.Since(startWaitForRunCompletion).String())
 
 	// When run is finished, get the completion
+	startListMessage := time.Now().UTC()
 	messageList, err := t.client.ListMessage(ctx, run.ThreadID, domain.Ptr(1),
 		domain.Ptr("desc"), nil /*after*/, nil /*before*/, domain.Ptr(run.ID))
 	if err != nil {
 		t.logger.Error(ctx, "Error listing messages", "error", err)
 		return nil, nil, fmt.Errorf("could not list messages: %w", err)
 	}
+	t.logger.Debug(ctx, "List messages", "time", time.Since(startListMessage).String())
 
 	if len(messageList.Messages) == 0 {
 		t.logger.Error(ctx, "No messages found")

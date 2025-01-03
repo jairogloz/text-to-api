@@ -35,6 +35,8 @@ type TranslationRequestBody struct {
 // @Router /v1/translations [post]
 func (h *Handler) Create(c *fiber.Ctx) error {
 
+	start := time.Now().UTC()
+
 	requestContext, err := handlers.GetRequestContext(c)
 	if err != nil {
 		h.logger.Error(c.Context(), "Failed to get request context, or request context is invalid", "error", err.Error())
@@ -62,5 +64,6 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return c.Status(httpStatusCode).JSON(fiber.Map{"error": message})
 	}
 
+	h.logger.Debug(c.Context(), "Translation created successfully", "total_duration", time.Since(start).String())
 	return c.JSON(translation)
 }
