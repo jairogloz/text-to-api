@@ -6,6 +6,7 @@ import (
 	"text-to-api/internal/handlers"
 	hdlPorts "text-to-api/internal/handlers/ports"
 	"text-to-api/internal/ports"
+	"time"
 )
 
 // CheckSubscriptionMdlw is a middleware that checks if the client has an active subscription.
@@ -53,6 +54,7 @@ func NewCheckSubscriptionMdlw(l ports.Logger, r hdlPorts.RequestContextHandler,
 func (ch *CheckSubscriptionMdlw) CheckSubscription() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 
+		startCheckSubscription := time.Now().UTC()
 		clientID := ch.reqCtxHdl.GetClientID(c)
 		if clientID == "" {
 			ch.logger.Error(c.Context(), "Client ID not found in request context")
@@ -75,6 +77,8 @@ func (ch *CheckSubscriptionMdlw) CheckSubscription() fiber.Handler {
 		}
 
 		ch.reqCtxHdl.SetSubscription(c, subscription)
+
+		ch.logger.Debug(c.Context(), "Check subscription time", "time", time.Since(startCheckSubscription).String())
 
 		return c.Next()
 	}
