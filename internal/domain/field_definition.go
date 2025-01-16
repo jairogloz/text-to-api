@@ -8,6 +8,7 @@ type FieldDefinition struct {
 	AllowedValues          []interface{}          `json:"allowed_values" bson:"allowed_values"`
 	DependentAllowedValues DependentAllowedValues `json:"dependent_allowed_values" bson:"dependent_allowed_values"`
 	DependsOn              *string                `json:"depends_on" bson:"depends_on"`
+	Description            string                 `json:"description" bson:"description"`
 	Name                   string                 `json:"name" bson:"name"`
 	Required               *bool                  `json:"required" bson:"required"`
 	Type                   string                 `json:"type" bson:"type"`
