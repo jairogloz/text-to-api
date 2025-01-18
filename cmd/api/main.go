@@ -20,12 +20,14 @@ import (
 	"text-to-api/internal/repositories/postgres"
 	apikeyrepo "text-to-api/internal/repositories/postgres/api_key"
 	"text-to-api/internal/repositories/postgres/client"
+	usageLimitRepo "text-to-api/internal/repositories/postgres/usage_limit"
 	"text-to-api/internal/server"
-	api_key2 "text-to-api/internal/services/api_key"
+	apiKeyService "text-to-api/internal/services/api_key"
 	"text-to-api/internal/services/auth"
 	stripeAPIHandler "text-to-api/internal/services/stripe"
 	"text-to-api/internal/services/subscription"
 	translationsService "text-to-api/internal/services/translations"
+	"text-to-api/internal/services/usage_limit"
 	"text-to-api/internal/translators/openai"
 	"text-to-api/internal/zap"
 	"time"
@@ -148,9 +150,25 @@ func main() {
 		panic(fmt.Sprintf("could not create check subscription middleware: %s", err))
 	}
 
+	usageLimitRepo, err := usageLimitRepo.NewUsageLimitRepository(logger, pgxPool)
+	if err != nil {
+		panic(fmt.Sprintf("could not create usage limit repository: %s", err))
+	}
+
+	usageLimitSrv, err := usage_limit.NewUsageLimitService(logger, usageLimitRepo)
+	if err != nil {
+		panic(fmt.Sprintf("could not create usage limit service: %s", err))
+	}
+
+	usageLimitMdwl, err := middleware.NewUsageLimitMdlwHdl(logger, reqCtxHdl, usageLimitSrv)
+	if err != nil {
+		panic(fmt.Sprintf("could not create usage limit middleware: %s", err))
+	}
+
 	translationsGroup := srv.App.Group("/v1/translations",
 		authMdlw.Auth(domain.AuthTypeAPIKey),
 		subsMdlw.CheckSubscription(),
+		usageLimitMdwl.UsageLimit(),
 		headersMdlw.ForceHeaders([]string{"User-Id"}))
 
 	// Register the translations handler
@@ -169,7 +187,7 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("could not create api key repository: %s", err))
 	}
-	apiKeyService, err := api_key2.NewAPIKeyService(logger, apiKeyRepo)
+	apiKeyService, err := apiKeyService.NewAPIKeyService(logger, apiKeyRepo)
 	if err != nil {
 		panic(fmt.Sprintf("could not create api key service: %s", err))
 	}

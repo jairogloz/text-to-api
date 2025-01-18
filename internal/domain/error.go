@@ -13,5 +13,6 @@ var (
 	ErrorSubscriptionPastDue           = errors.New("subscription_past_due")
 	ErrorSubscriptionPaused            = errors.New("subscription_paused")
 	ErrorSubscriptionUnpaid            = errors.New("subscription_unpaid")
+	ErrorUsageLimitExceeded            = errors.New("usage_limit_exceeded")
 	ErrorValidation                    = errors.New("validation_error")
 )
