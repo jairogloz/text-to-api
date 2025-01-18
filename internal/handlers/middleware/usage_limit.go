@@ -7,6 +7,7 @@ import (
 	"text-to-api/internal/domain"
 	hdlPorts "text-to-api/internal/handlers/ports"
 	"text-to-api/internal/ports"
+	"time"
 )
 
 // UsageLimitMdlwHdl is the receiver for the usage limit middleware handler.
@@ -44,7 +45,7 @@ func NewUsageLimitMdlwHdl(l ports.Logger, reqCtxHdl hdlPorts.RequestContextHandl
 //   - fiber.Handler: The middleware handler function.
 func (h *UsageLimitMdlwHdl) UsageLimit() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		h.logger.Debug(c.Context(), "Usage limit middleware")
+		startUsageLimit := time.Now().UTC()
 
 		clientID := h.reqCtxHdl.GetClientID(c)
 		if clientID == "" {
@@ -74,6 +75,7 @@ func (h *UsageLimitMdlwHdl) UsageLimit() fiber.Handler {
 			})
 		}
 
+		h.logger.Info(c.Context(), "Usage limit check completed", "duration", time.Since(startUsageLimit).String())
 		return c.Next()
 	}
 }

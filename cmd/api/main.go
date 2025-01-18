@@ -25,7 +25,6 @@ import (
 	apiKeyService "text-to-api/internal/services/api_key"
 	"text-to-api/internal/services/auth"
 	stripeAPIHandler "text-to-api/internal/services/stripe"
-	"text-to-api/internal/services/subscription"
 	translationsService "text-to-api/internal/services/translations"
 	"text-to-api/internal/services/usage_limit"
 	"text-to-api/internal/translators/openai"
@@ -140,22 +139,22 @@ func main() {
 		panic(fmt.Sprintf("could not create headers middleware handler: %s", err))
 	}
 
-	subsSrv, err := subscription.NewSubscriptionService(pgxClientRepo, logger, stripeSrv)
-	if err != nil {
-		panic(fmt.Sprintf("could not create subscription service: %s", err))
-	}
+	//subsSrv, err := subscription.NewSubscriptionService(pgxClientRepo, logger, stripeSrv)
+	//if err != nil {
+	//	panic(fmt.Sprintf("could not create subscription service: %s", err))
+	//}
 
-	subsMdlw, err := middleware.NewCheckSubscriptionMdlw(logger, reqCtxHdl, subsSrv)
-	if err != nil {
-		panic(fmt.Sprintf("could not create check subscription middleware: %s", err))
-	}
+	//subsMdlw, err := middleware.NewCheckSubscriptionMdlw(logger, reqCtxHdl, subsSrv)
+	//if err != nil {
+	//	panic(fmt.Sprintf("could not create check subscription middleware: %s", err))
+	//}
 
-	usageLimitRepo, err := usageLimitRepo.NewUsageLimitRepository(logger, pgxPool)
+	usageLimitStorage, err := usageLimitRepo.NewUsageLimitRepository(logger, pgxPool)
 	if err != nil {
 		panic(fmt.Sprintf("could not create usage limit repository: %s", err))
 	}
 
-	usageLimitSrv, err := usage_limit.NewUsageLimitService(logger, usageLimitRepo)
+	usageLimitSrv, err := usage_limit.NewUsageLimitService(logger, usageLimitStorage)
 	if err != nil {
 		panic(fmt.Sprintf("could not create usage limit service: %s", err))
 	}
@@ -167,7 +166,7 @@ func main() {
 
 	translationsGroup := srv.App.Group("/v1/translations",
 		authMdlw.Auth(domain.AuthTypeAPIKey),
-		subsMdlw.CheckSubscription(),
+		//subsMdlw.CheckSubscription(), // Disable check subscription for now
 		usageLimitMdwl.UsageLimit(),
 		headersMdlw.ForceHeaders([]string{"User-Id"}))
 
