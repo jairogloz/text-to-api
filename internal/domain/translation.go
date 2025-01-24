@@ -41,7 +41,6 @@ func (tr *TranslationRequest) Validate() error {
 
 // Translation represents a translation in the system. It includes the prompt, the request body definition and the translation itself.
 type Translation struct {
-	ID                 string             `json:"id" bson:"_id"`
-	TranslationRequest TranslationRequest `json:"translation_request" bson:"translation_request"`
-	MappedObject       interface{}        `json:"mapped_object" bson:"mapped_object"`
+	ID           string      `json:"id" bson:"_id"`
+	MappedObject interface{} `json:"mapped_object" bson:"mapped_object"`
 }

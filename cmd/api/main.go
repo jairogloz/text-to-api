@@ -24,6 +24,7 @@ import (
 	"text-to-api/internal/server"
 	apiKeyService "text-to-api/internal/services/api_key"
 	"text-to-api/internal/services/auth"
+	"text-to-api/internal/services/randomizer"
 	stripeAPIHandler "text-to-api/internal/services/stripe"
 	translationsService "text-to-api/internal/services/translations"
 	"text-to-api/internal/services/usage_limit"
@@ -89,7 +90,12 @@ func main() {
 		panic(fmt.Sprintf("could not create user repository: %s", err))
 	}
 
-	service, err := translationsService.NewTranslationsService(translator, logger, userRepo)
+	rand, err := randomizer.NewRandomizer()
+	if err != nil {
+		panic(fmt.Sprintf("could not create randomizer: %s", err))
+	}
+
+	service, err := translationsService.NewTranslationsService(translator, logger, userRepo, rand)
 	if err != nil {
 		panic(fmt.Sprintf("could not create translations service: %s", err))
 	}

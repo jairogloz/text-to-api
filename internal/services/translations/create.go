@@ -59,9 +59,8 @@ func (s service) Create(ctx context.Context, request domain.TranslationRequest, 
 		s.logger.Debug(ctx, "Translation time", "time", time.Since(startTranslation).String())
 
 		translation = domain.Translation{
-			ID:                 "",
-			TranslationRequest: request,
-			MappedObject:       mappedObject,
+			ID:           s.randomizer.RandomUUID(),
+			MappedObject: mappedObject,
 		}
 	default:
 		return nil, fmt.Errorf("%w: translation type '%s' is not supported", domain.ErrorValidation, request.TranslationType)
