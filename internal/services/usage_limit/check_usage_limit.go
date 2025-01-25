@@ -7,7 +7,7 @@ import (
 	"text-to-api/internal/domain"
 )
 
-const reqCountLimit = 30
+const reqCountLimit = 50
 
 // CheckUsageLimit checks if a client has exceeded their allowed number of requests.
 //
