@@ -1,6 +1,7 @@
 package translations
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"text-to-api/internal/domain"
 	"text-to-api/internal/handlers"
@@ -47,7 +48,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 	var requestBody TranslationRequestBody
 	// Parse the requestBody body into the struct
 	if err := c.BodyParser(&requestBody); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Failed to parse requestBody body"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": fmt.Sprintf("Failed to parse requestBody body: %s", err.Error())})
 	}
 
 	translationRequest := domain.TranslationRequest{
