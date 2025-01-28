@@ -10,6 +10,7 @@ type FieldDefinition struct {
 	DependsOn              *string                `json:"depends_on" bson:"depends_on"`
 	Description            string                 `json:"description" bson:"description"`
 	Fields                 []FieldDefinition      `json:"fields" bson:"fields"`
+	Format                 *string                `json:"format" bson:"format"`
 	Name                   string                 `json:"name" bson:"name"`
 	Required               *bool                  `json:"required" bson:"required"`
 	Type                   string                 `json:"type" bson:"type"`
