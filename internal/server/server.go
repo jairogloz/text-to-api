@@ -14,6 +14,7 @@ func New() *FiberServer {
 		App: fiber.New(fiber.Config{
 			ServerHeader: "text-to-api",
 			AppName:      "text-to-api",
+			BodyLimit:    2 * 1024 * 1024, // 2MB
 		}),
 	}
 
